@@ -1,0 +1,13 @@
+django>=4.2
+psycopg2-binary>=2.9
+djangorestframework>=3.14
+djangorestframework-gis>=1.0
+gunicorn>=21.2
+redis>=5.0
+requests>=2.31
+# huggingface_hub<0.20
+# sentence-transformers==2.2.2
+
+django-redis==5.4.0
+django-cors-headers==4.4.0
+# GDAL==3.4.3

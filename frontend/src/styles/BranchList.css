@@ -1,0 +1,80 @@
+.branch-list {
+    flex: 1;
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+.branch-list ul {
+    list-style: none;
+    padding: 0;
+}
+.branch-list li {
+    padding: 0.5rem;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+.branch-list li:hover {
+    background: #eef;
+}
+.search-input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+.coords {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+
+.branch-list-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.branch-item {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.branch-item:hover {
+  background-color: #eef6ff;
+}
+
+.branch-header {
+  margin-bottom: 8px;
+}
+
+.branch-name {
+  font-size: 1.1rem;
+  color: #1e3a8a;
+}
+
+.branch-details {
+  font-size: 0.95rem;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.branch-line span {
+  margin-left: 4px;
+}
+
+.branch-coords {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #666;
+}

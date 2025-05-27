@@ -1,0 +1,93 @@
+services:
+  db:
+    image: postgis/postgis:15-3.4
+    environment:
+      - POSTGRES_DB=GIS
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: tienlee.lvt@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5080:80"
+    depends_on:
+      - db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py createcachetable &&
+             python manage.py import_branchs || true &&
+             gunicorn --bind 0.0.0.0:8003 --workers 4 --threads 2 --log-level debug branch_map.wsgi:application"
+    ports:
+      - "8003:8003"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgis://admin:admin@db:5432/GIS
+      - REDIS_URL=redis://redis:6379/1
+    volumes:
+      - ./backend:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/api/branchs/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://backend:8003/api
+    # healthcheck:
+    #   # test: ["CMD", "curl", "-f", "http://localhost:3000"]
+    #   test: ["CMD", "curl", "-f", "http://branch-map-backend-1:8003"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+
+volumes:
+  db_data:
+  pgadmin_data:

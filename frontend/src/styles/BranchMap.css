@@ -1,0 +1,76 @@
+.branch-map {
+    flex: 2;
+    height: 500px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Glowing marker */
+.branch-marker {
+    width: 18px;
+    height: 18px;
+    background-color: #4285f4; /* Google Blue */
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 10px rgba(66, 133, 244, 0.7);
+}
+/* BranchMap.css */
+.maplibregl-popup {
+  z-index: 10000 !important; /* Đảm bảo popup hiển thị trên các lớp khác */
+}
+
+.maplibregl-popup-content {
+  background: #fff; /* Màu nền trắng */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Bóng đổ */
+  padding: 12px;
+  max-width: 240px;
+  font-family: 'Arial', sans-serif;
+}
+
+.maplibregl-popup-content h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333; /* Màu tiêu đề */
+}
+
+.maplibregl-popup-content p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #666; /* Màu chữ phụ */
+  line-height: 1.4;
+}
+
+.maplibregl-popup-content img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin-top: 8px;
+  border: 1px solid #ddd; /* Viền nhẹ cho hình ảnh */
+}
+
+.maplibregl-popup-tip {
+  border-top-color: #fff !important; /* Màu mũi tên popup */
+}
+
+/* Chế độ tối (nếu cần) */
+@media (prefers-color-scheme: dark) {
+  .maplibregl-popup-content {
+    background: #2a2a2a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  .maplibregl-popup-content h3 {
+    color: #fff;
+  }
+
+  .maplibregl-popup-content p {
+    color: #ccc;
+  }
+
+  .maplibregl-popup-tip {
+    border-top-color: #2a2a2a !important;
+  }
+}
