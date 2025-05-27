@@ -1,9 +1,9 @@
-# 📘 Project Overview: Bank Branch Map 3D Visualization
+# 📘 Project Overview:ACB Bank Branch Map 3D Visualization
 
 ## 🚀 Purpose
 
-An interactive 3D map-based web application for visualizing bank branch locations in Vietnam using 3D building models and real-time data interaction. Designed for internal dashboard use or public visualization.
-
+An interactive 3D map-based web application for visualizing ACB bank branch locations in Vietnam using 3D building models and real-time data interaction. Designed for internal dashboard use or public visualization.
+![alt text](purpose.jpg)
 ---
 
 ## 🧱 Tech Stack
@@ -103,7 +103,7 @@ CREATE TABLE branches (
 ---
 
 ## 🐳 Docker Overview
-
+![alt text](docker.png)
 ### Dockerfile (React App)
 
 ```dockerfile
@@ -182,5 +182,3 @@ volumes:
 TienLee - tienlee.lvt@gmail.com
 
 ---
-
-> Maintained by GIS / Visualization Team – 2025
