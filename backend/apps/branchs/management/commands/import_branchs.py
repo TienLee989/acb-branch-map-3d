@@ -7,7 +7,7 @@ from apps.branchs.models import Branch  # đúng model name
 
 
 class Command(BaseCommand):
-    help = 'Tạo ngẫu nhiên 10 trụ sở ngân hàng ACB tại TP.HCM vào gis_branchs'
+    help = 'Tạo ngẫu nhiên 10 trụ sở ngân hàng ACB tại Việt Nam vào gis_branchs'
 
     def handle(self, *args, **kwargs):
         # Tải mô hình embedding

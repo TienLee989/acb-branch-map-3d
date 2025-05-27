@@ -9,7 +9,7 @@ function App() {
     <BranchProvider>
       <div className="app">
         <h1 className="title">
-          🏦 Hệ thống Branch tại TP. Hồ Chí Minh
+          🏦 Hệ thống ACB Branch tại Việt Name
           <small className="version">v1.0.1</small>
         </h1>
         <div className="content">
