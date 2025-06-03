@@ -59,4 +59,6 @@ touch /app/apps/branchs/__init__.py
 docker-compose exec redis bash
 redis-cli -n 1 FLUSHDB
 
+python manage.py createsuperuser
+
 docker-compose exec backend python manage.py import_branchs

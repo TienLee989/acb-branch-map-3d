@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý Nhân sự - ACB Bank</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="./../src/styles/index.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="header w-100 d-flex justify-content-center align-items-center pt-3 pb-1" style="position: sticky; top: 0; z-index: 100; background-color: #ffffff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+        <div>
+            <!-- <img src="https://via.placeholder.com/40" alt="User Avatar"> -->
+            <h4 class="font-semibold mb-1">Hệ thống Quản lý nhân sự ACB Bank tại Việt Nam<small class="text-muted text-sm">v1.0.1</small></h4>
+            <p id="currentTime" class="text-sm font-mono text-center"></p>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <nav class="flex flex-col h-full">
+            <a href="#" onclick="showSection('dashboard')" class="active">
+                <i class="fas fa-home"></i>
+                <span>Tổng quan</span>
+            </a>
+            <a href="#" onclick="showSection('personnel')">
+                <i class="fas fa-users"></i>
+                <span>Nhân sự</span>
+            </a>
+            <a href="#" onclick="showSection('branches')">
+                <i class="fas fa-building"></i>
+                <span>Chi nhánh</span>
+            </a>
+            <a href="#" onclick="showSection('attendance')">
+                <i class="fas fa-clock"></i>
+                <span>Chấm công</span>
+            </a>
+            <a href="#" onclick="showSection('reports')">
+                <i class="fas fa-chart-bar"></i>
+                <span>Báo cáo</span>
+            </a>
+            <a href="#" onclick="showSection('reminders')">
+                <i class="fas fa-bell"></i>
+                <span>Nhắc việc</span>
+            </a>
+            <a href="#menu" onclick="toggleSidebar()">
+                <i class="fa-duotone fa-solid fa-bars"></i>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content" id="content">
+        <!-- Dashboard -->
+        <div id="dashboard" class="section">
+            <h2 class="text-2xl font-bold mb-4">Tổng quan</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-700">Tổng Nhân viên</h3>
+                    <p class="text-2xl font-bold text-gray-900">2,408</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-700">Thử việc</h3>
+                    <p class="text-2xl font-bold text-gray-900">126</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-700">Chính thức</h3>
+                    <p class="text-2xl font-bold text-gray-900">2,272</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-700">Nghỉ thai sản</h3>
+                    <p class="text-2xl font-bold text-gray-900">0</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-2 text-gray-700">Nhân viên theo Chi nhánh</h3>
+                    <canvas id="dashboardBranchChart"></canvas>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-2 text-gray-700">Biến động Nhân sự</h3>
+                    <canvas id="movementChart"></canvas>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-2 text-gray-700">Số lượng Nhân sự</h3>
+                    <canvas id="quantityChart"></canvas>
+                </div>
+                <div class="card">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="text-lg font-semibold mb-2 text-gray-700">Cơ cấu Nhân sự theo Độ tuổi</h3>
+                            <canvas id="ageChart" width="200" height="200"></canvas>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold mb-2 text-gray-700">Thống kê Hợp đồng theo Loại</h3>
+                            <canvas id="contractChart" width="200" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="spinner-overlay" id="dashboardSpinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang tải...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personnel Section -->
+        <div id="personnel" class="section hidden">
+            <h2 class="text-2xl font-bold mb-4">Thông tin Nhân sự</h2>
+            <div class="flex justify-between mb-4">
+                <input type="text" id="searchPersonnel" placeholder="Tìm kiếm nhân viên..."
+                    class="w-1/2 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div>
+                    <button class="custom-btn me-2" onclick="refreshData('personnel')">
+                        <i class="fas fa-sync-alt mr-2"></i>Làm mới
+                    </button>
+                    <button class="custom-btn" data-bs-toggle="modal" data-bs-target="#addPersonnelModal">
+                        <i class="fas fa-plus mr-2"></i>Thêm Nhân viên
+                    </button>
+                </div>
+            </div>
+            <div class="card relative min-h-[200px] shadow p-0">
+                <div class="spinner-overlay" id="personnelSpinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+                <table class="w-full bg-white rounded-lg rounded">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-2 text-left">Tên</th>
+                            <th class="p-2 text-left">Vị trí</th>
+                            <th class="p-2 text-left">Phòng ban</th>
+                            <th class="p-2 text-left">Chi nhánh</th>
+                            <th class="p-2 text-left">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="personnelTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Branches Section -->
+        <div id="branches" class="section hidden">
+            <h2 class="text-2xl font-bold mb-4">Thông tin Chi nhánh</h2>
+            <div class="card mb-4">
+                <div id="map" style="height: 300px;"></div>
+            </div>
+            <div class="flex justify-between mb-4">
+                <input type="text" id="searchBranch" placeholder="Tìm kiếm chi nhánh..."
+                    class="w-1/2 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button class="custom-btn" onclick="refreshData('branches')">
+                    <i class="fas fa-sync-alt mr-2"></i>Làm mới
+                </button>
+            </div>
+            <div class="card relative min-h-[200px] shadow p-0">
+                <div class="spinner-overlay" id="branchesSpinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+                <table class="w-full bg-white rounded-lg">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-2 text-left">Tên Chi nhánh</th>
+                            <th class="p-2 text-left">Địa chỉ</th>
+                            <th class="p-2 text-left">Số tầng</th>
+                            <th class="p-2 text-left">Phòng ban</th>
+                            <th class="p-2 text-left">Nhân viên</th>
+                            <th class="p-2 text-left">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="branchTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Attendance Section -->
+        <div id="attendance" class="section hidden">
+            <h2 class="text-2xl font-bold mb-4">Thông tin Chấm công</h2>
+            <div class="flex justify-between mb-4">
+                <input type="date" id="attendanceDate" class="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div>
+                    <button class="custom-btn me-2" onclick="refreshData('attendance')">
+                        <i class="fas fa-sync-alt mr-2"></i>Làm mới
+                    </button>
+                    <button class="custom-btn" onclick="exportAttendance()">
+                        <i class="fas fa-download mr-2"></i>Xuất CSV
+                    </button>
+                </div>
+            </div>
+            <div class="card relative min-h-[200px] shadow p-0">
+                <div class="spinner-overlay" id="attendanceSpinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+                <table class="w-full bg-white rounded-lg">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-2 text-left">Tên</th>
+                            <th class="p-2 text-left">Ngày</th>
+                            <th class="p-2 text-left">Trạng thái</th>
+                            <th class="p-2 text-left">Giờ vào</th>
+                            <th class="p-2 text-left">Giờ ra</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div id="reports" class="section hidden">
+            <h2 class="text-2xl font-bold mb-4">Báo cáo Nâng cao</h2>
+            <div class="flex justify-between mb-4">
+                <div class="flex space-x-2">
+                    <input type="date" id="reportStartDate" class="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="date" id="reportEndDate" class="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button class="custom-btn" onclick="filterReports()">
+                        <i class="fas fa-filter mr-2"></i>Lọc
+                    </button>
+                </div>
+                <div>
+                    <button class="custom-btn me-2" onclick="refreshData('reports')">
+                        <i class="fas fa-sync-alt mr-2"></i>Làm mới
+                    </button>
+                    <button class="custom-btn" onclick="exportReportPDF()">
+                        <i class="fas fa-file-pdf mr-2"></i>Xuất PDF
+                    </button>
+                </div>
+            </div>
+            <div class="card relative">
+                <div class="spinner-overlay" id="reportsSpinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 shadow p-0">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2 text-gray-700">Cơ cấu Nhân sự theo Độ tuổi</h3>
+                        <canvas id="ageChart" width="200" height="200"></canvas>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2 text-gray-700">Thống kê Hợp đồng theo Loại</h3>
+                        <canvas id="contractChart" width="200" height="200"></canvas>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2 text-gray-700">Biến động Nhân sự</h3>
+                        <canvas id="movementChart"></canvas>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2 text-gray-700">Số lượng Nhân sự</h3>
+                        <canvas id="quantityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reminders Section -->
+        <div id="reminders" class="section hidden">
+            <h2 class="text-2xl font-bold mb-4">Nhắc việc</h2>
+            <div class="card">
+                <ul class="reminder-list">
+                    <li class="p-2 border-b text-gray-700">Giấy tờ hết hạn: 28</li>
+                    <li class="p-2 border-b text-gray-700">Ký nghiệm ngày vào làm: 47</li>
+                    <li class="p-2 border-b text-gray-700">Sinh nhật: 38</li>
+                    <li class="p-2 border-b text-gray-700">NPT hết thời gian giảm trừ: 648</li>
+                    <li class="p-2 border-b text-gray-700">Chưa ký hợp đồng: 26</li>
+                    <li class="p-2 border-b text-gray-700">Hết hạn hợp đồng: 1002</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="addPersonnelModal" tabindex="-1" aria-labelledby="addPersonnelModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPersonnelModalLabel">Thêm Nhân viên</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="personnelForm">
+                        <div class="mb-3">
+                            <label class="form-label text-gray-700">Tên</label>
+                            <input type="text" class="form-control border-gray-300 focus:ring-2 focus:ring-blue-500" id="personName">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-gray-700">Vị trí</label>
+                            <input type="text" class="form-control border-gray-300 focus:ring-2 focus:ring-blue-500" id="personPosition">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-gray-700">Phòng ban</label>
+                            <input type="text" class="form-control border-gray-300 focus:ring-2 focus:ring-blue-500" id="personDepartment">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-gray-700">Chi nhánh</label>
+                            <input type="text" class="form-control border-gray-300 focus:ring-2 focus:ring-blue-500" id="personBranch">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="custom-btn" onclick="savePersonnel()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="branchDetailModal" tabindex="-1" aria-labelledby="branchDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="branchDetailModalLabel">Chi tiết Chi nhánh</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong class="text-gray-700">Tên:</strong> <span id="branchName"></span></p>
+                    <p><strong class="text-gray-700">Địa chỉ:</strong> <span id="branchAddress"></span></p>
+                    <p><strong class="text-gray-700">Số tầng:</strong> <span id="branchFloors"></span></p>
+                    <p><strong class="text-gray-700">Phòng ban:</strong> <span id="branchDepartments"></span></p>
+                    <p><strong class="text-gray-700">Nhân viên:</strong> <span id="branchEmployees"></span></p>
+                    <div id="modalMap" style="height: 300px;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-white bg-secondary mt-10 w-100 bg-primary d-flex flex-column flex-md-row justify-content-center align-items-center gap-2 py-2">
+        <p class="mb-0 text-center">&copy; 2025 ACB Bank - All rights reserved.</p>
+        <p class="mb-0 text-center">
+            Development by 
+            <a href="mailto:tienlee.lvt@gmail.com" class="text-info text-decoration-underline ms-1">Tienlee.lvt@gmail.com</a>
+        </p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Sample data (unchanged)
+        const personnelData = [
+            { name: "Nguyễn Văn A", position: "Nhân viên", department: "Tín dụng", branch: "CN Hà Nội" },
+            { name: "Trần Thị B", position: "Quản lý", department: "Kế toán", branch: "CN TP.HCM" },
+            { name: "Lê Văn C", position: "Nhân viên", department: "Hành chính", branch: "CN Hà Nội" }
+        ];
+
+        const branchData = [
+            { name: "CN Hà Nội", address: "123 Đường Láng, Hà Nội", floors: 5, departments: 10, employees: 250, lat: 21.0278, lng: 105.8342 },
+            { name: "CN Đà Nẵng", address: "456 Lê Lợi, TP.HCM", floors: 7, departments: 5, employees: 270, lat: 10.7769, lng: 106.7009 },
+            { name: "CN TP.HCM", address: "456 Lê Lợi, TP.HCM", floors: 11, departments: 12, employees: 300, lat: 10.7769, lng: 106.7009 },
+            { name: "CN Cần Thơ", address: "456 Lê Lợi, TP.HCM", floors: 2, departments: 3, employees: 70, lat: 10.7769, lng: 106.7009 },
+            { name: "CN Cà Mau", address: "456 Lê Lợi, TP.HCM", floors: 7, departments: 2, employees: 50, lat: 10.7769, lng: 106.7009 }
+        ];
+
+        const attendanceData = [    
+            { name: "Nguyễn Văn A", date: "2025-05-28", status: "Đi làm", timeIn: "08:00", timeOut: "17:00", hours: 9 },
+            { name: "Nguyễn Văn A", date: "2025-05-29", status: "Đi làm", timeIn: "08:15", timeOut: "17:30", hours: 9.25 },
+            { name: "Nguyễn Văn A", date: "2025-05-30", status: "Muộn", timeIn: "09:00", timeOut: "17:00", hours: 8 },
+            { name: "Trần Thị B", date: "2025-05-30", status: "Nghỉ", timeIn: "-", timeOut: "-", hours: 0 }
+        ];
+
+        const personnelStatus = { "Thử việc": 126, "Chính thức": 2272, "Nghỉ thai sản": 0, "Khác": 10 };
+        const ageData = { "Dưới 30": 1804, "30-40": 574, "41-50": 45, "50+": 2, "Không xác định": 3 };
+        const contractData = { "Hợp đồng chính thức": 1959, "Hợp đồng xác định thời hạn": 102, "Thử việc": 7, "Khác": 1 };
+        const movementData = { dates: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5"], join: [410, 603, 822, 907, 1301], leave: [2426, 2429, 1674, 1301, 907] };
+        const quantityData = [410, 603, 822, 907, 1301, 1674, 2426, 2429];
+
+        // Initialize map
+        let map, modalMap;
+        function initMap() {
+            map = L.map('map').setView([16.0471, 108.2062], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
+            branchData.forEach(branch => L.marker([branch.lat, branch.lng]).addTo(map).bindPopup(`<b>${branch.name}</b><br>${branch.address}`));
+        }
+
+        function initModalMap(lat, lng, name, address) {
+            modalMap = L.map('modalMap').setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(modalMap);
+            L.marker([lat, lng]).addTo(modalMap).bindPopup(`<b>${name}</b><br>${address}`);
+        }
+
+        // Show section
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => section.classList.add('hidden'));
+            document.getElementById(sectionId).classList.remove('hidden');
+            document.querySelectorAll('.sidebar a').forEach(link => link.classList.remove('active'));
+            document.querySelector(`.sidebar a[onclick="showSection('${sectionId}')"]`).classList.add('active');
+            showSpinner(sectionId);
+            setTimeout(() => {
+                hideSpinner(sectionId);
+                if (sectionId === 'branches') initMap();
+                if (sectionId === 'reports' || sectionId === 'dashboard') initCharts();
+            }, 1000);
+        }
+
+        // Spinner control
+        function showSpinner(sectionId) {
+            document.getElementById(`${sectionId}Spinner`).classList.add('active');
+        }
+
+        function hideSpinner(sectionId) {
+            document.getElementById(`${sectionId}Spinner`).classList.remove('active');
+        }
+
+        // Toast notification
+        function showToast(message) {
+            const toast = new bootstrap.Toast(document.getElementById('actionToast'));
+            document.getElementById('toastMessage').innerText = message;
+            toast.show();
+        }
+
+        // Populate tables
+        function populatePersonnelTable() {
+            const table = document.getElementById('personnelTable');
+            table.innerHTML = '';
+            personnelData.forEach(person => {
+                table.innerHTML += `
+                    <tr>
+                        <td class="p-2">${person.name}</td>
+                        <td class="p-2">${person.position}</td>
+                        <td class="p-2">${person.department}</td>
+                        <td class="p-2">${person.branch}</td>
+                        <td class="p-2">
+                            <button class="custom-btn-edit me-2" onclick="editPersonnel('${person.name}')"><i class="fas fa-edit"></i> Sửa</button>
+                            <button class="custom-btn-del" onclick="deletePersonnel('${person.name}')"><i class="fas fa-trash"></i> Xóa</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function populateBranchTable() {
+            const table = document.getElementById('branchTable');
+            table.innerHTML = '';
+            branchData.forEach(branch => {
+                table.innerHTML += `
+                    <tr>
+                        <td class="p-2">${branch.name}</td>
+                        <td class="p-2">${branch.address}</td>
+                        <td class="p-2">${branch.floors}</td>
+                        <td class="p-2">${branch.departments}</td>
+                        <td class="p-2">${branch.employees}</td>
+                        <td class="p-2">
+                            <button class="custom-btn" onclick="showBranchDetail('${branch.name}')"><i class="fas fa-info-circle"></i> Chi tiết</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function populateAttendanceTable() {
+            const table = document.getElementById('attendanceTable');
+            table.innerHTML = '';
+            attendanceData.forEach(record => {
+                table.innerHTML += `
+                    <tr>
+                        <td class="p-2">${record.name}</td>
+                        <td class="p-2">${record.date}</td>
+                        <td class="p-2">${record.status}</td>
+                        <td class="p-2">${record.timeIn}</td>
+                        <td class="p-2">${record.timeOut}</td>
+                    </tr>`;
+            });
+        }
+
+        // Chart.js initialization
+        let dashboardStatusChart, dashboardBranchChart, ageChart, contractChart, movementChart, quantityChart;
+        function initCharts() {
+            const dashboardBranchCtx = document.getElementById('dashboardBranchChart')?.getContext('2d');
+            if (dashboardBranchCtx) dashboardBranchChart = new Chart(dashboardBranchCtx, { type: 'bar', data: { labels: branchData.map(b => b.name), datasets: [{ label: 'Số nhân viên', data: branchData.map(b => b.employees), backgroundColor: '#3b82f6', borderColor: '#1e3a8a', borderWidth: 1 }] }, options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } } });
+
+            const ageCtx = document.getElementById('ageChart')?.getContext('2d');
+            if (ageCtx) ageChart = new Chart(ageCtx, { type: 'pie', data: { labels: Object.keys(ageData), datasets: [{ data: Object.values(ageData), backgroundColor: ['#3b82f6', '#ef4444', '#f59e0b', '#10b981', '#6b7280'] }] }, options: { plugins: { legend: { position: 'bottom' } } } });
+
+            const contractCtx = document.getElementById('contractChart')?.getContext('2d');
+            if (contractCtx) contractChart = new Chart(contractCtx, { type: 'pie', data: { labels: Object.keys(contractData), datasets: [{ data: Object.values(contractData), backgroundColor: ['#3b82f6', '#ef4444', '#f59e0b', '#10b981'] }] }, options: { plugins: { legend: { position: 'bottom' } } } });
+
+            const movementCtx = document.getElementById('movementChart')?.getContext('2d');
+            if (movementCtx) movementChart = new Chart(movementCtx, { type: 'line', data: { labels: movementData.dates, datasets: [{ label: 'Tiếp nhận', data: movementData.join, borderColor: '#10b981', fill: false }, { label: 'Nghỉ việc', data: movementData.leave, borderColor: '#ef4444', fill: false }] }, options: { scales: { y: { beginAtZero: true } } } });
+
+            const quantityCtx = document.getElementById('quantityChart')?.getContext('2d');
+            if (quantityCtx) quantityChart = new Chart(quantityCtx, { type: 'bar', data: { labels: movementData.dates.concat(["Tháng 6", "Tháng 7", "Tháng 8"]), datasets: [{ label: 'Số lượng nhân sự', data: quantityData, backgroundColor: '#3b82f6', borderColor: '#1e3a8a', borderWidth: 1 }] }, options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } } });
+        }
+
+        // Export functions (unchanged)
+        function exportAttendance() {
+            let csv = 'Tên,Ngày,Trạng thái,Giờ vào,Giờ ra\n';
+            attendanceData.forEach(record => csv += `${record.name},${record.date},${record.status},${record.timeIn},${record.timeOut}\n`);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'attendance.csv';
+            a.click();
+            showToast('Đã xuất CSV thành công!');
+        }
+
+        function exportReportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text('Báo cáo Nhân sự ACB', 10, 10);
+            doc.text('Cơ cấu Nhân sự theo Độ tuổi', 10, 20);
+            Object.keys(ageData).forEach((key, i) => doc.text(`${key}: ${ageData[key]}`, 10, 30 + i * 10));
+            doc.text('Thống kê Hợp đồng theo Loại', 10, 80);
+            Object.keys(contractData).forEach((key, i) => doc.text(`${key}: ${contractData[key]}`, 10, 90 + i * 10));
+            doc.save('report.pdf');
+            showToast('Đã xuất PDF thành công!');
+        }
+
+        // Modal functions (unchanged)
+        function savePersonnel() {
+            const name = document.getElementById('personName').value;
+            const position = document.getElementById('personPosition').value;
+            const department = document.getElementById('personDepartment').value;
+            const branch = document.getElementById('personBranch').value;
+            personnelData.push({ name, position, department, branch });
+            populatePersonnelTable();
+            bootstrap.Modal.getInstance(document.getElementById('addPersonnelModal')).hide();
+            showToast('Đã thêm nhân viên thành công!');
+        }
+
+        function editPersonnel(name) {
+            const person = personnelData.find(p => p.name === name);
+            document.getElementById('personName').value = person.name;
+            document.getElementById('personPosition').value = person.position;
+            document.getElementById('personDepartment').value = person.department;
+            document.getElementById('personBranch').value = person.branch;
+            document.getElementById('addPersonnelModalLabel').innerText = 'Sửa Nhân viên';
+            new bootstrap.Modal(document.getElementById('addPersonnelModal')).show();
+        }
+
+        function deletePersonnel(name) {
+            const index = personnelData.findIndex(p => p.name === name);
+            personnelData.splice(index, 1);
+            populatePersonnelTable();
+            showToast('Đã xóa nhân viên thành công!');
+        }
+
+        function showBranchDetail(name) {
+            const branch = branchData.find(b => b.name === name);
+            document.getElementById('branchName').innerText = branch.name;
+            document.getElementById('branchAddress').innerText = branch.address;
+            document.getElementById('branchFloors').innerText = branch.floors;
+            document.getElementById('branchDepartments').innerText = branch.departments;
+            document.getElementById('branchEmployees').innerText = branch.employees;
+            new bootstrap.Modal(document.getElementById('branchDetailModal')).show();
+            setTimeout(() => initModalMap(branch.lat, branch.lng, branch.name, branch.address), 500);
+        }
+
+        // Search functionality (unchanged)
+        document.getElementById('searchPersonnel').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = personnelData.filter(person => person.name.toLowerCase().includes(query));
+            const table = document.getElementById('personnelTable');
+            table.innerHTML = '';
+            filtered.forEach(person => {
+                table.innerHTML += `
+                    <tr>
+                        <td class="p-2">${person.name}</td>
+                        <td class="p-2">${person.position}</td>
+                        <td class="p-2">${person.department}</td>
+                        <td class="p-2">${person.branch}</td>
+                        <td class="p-2">
+                            <button class="custom-btn-edit me-2" onclick="editPersonnel('${person.name}')"><i class="fas fa-edit"></i> Sửa</button>
+                            <button class="custom-btn-del" onclick="deletePersonnel('${person.name}')"><i class="fas fa-trash"></i> Xóa</button>
+                        </td>
+                    </tr>`;
+            });
+        });
+
+        document.getElementById('searchBranch').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = branchData.filter(branch => branch.name.toLowerCase().includes(query));
+            const table = document.getElementById('branchTable');
+            table.innerHTML = '';
+            filtered.forEach(branch => {
+                table.innerHTML += `
+                    <tr>
+                        <td class="p-2">${branch.name}</td>
+                        <td class="p-2">${branch.address}</td>
+                        <td class="p-2">${branch.floors}</td>
+                        <td class="p-2">${branch.departments}</td>
+                        <td class="p-2">${branch.employees}</td>
+                        <td class="p-2">
+                            <button class="custom-btn" onclick="showBranchDetail('${branch.name}')"><i class="fas fa-info-circle"></i> Chi tiết</button>
+                        </td>
+                    </tr>`;
+            });
+        });
+
+        // Filter reports (unchanged)
+        function filterReports() {
+            const startDate = document.getElementById('reportStartDate').value;
+            const endDate = document.getElementById('reportEndDate').value;
+            showSpinner('reports');
+            setTimeout(() => {
+                hideSpinner('reports');
+                initCharts();
+                showToast('Đã lọc báo cáo thành công!');
+            }, 1000);
+        }
+
+        // Refresh data (unchanged)
+        function refreshData(sectionId) {
+            showSpinner(sectionId);
+            setTimeout(() => {
+                hideSpinner(sectionId);
+                if (sectionId === 'personnel') populatePersonnelTable();
+                if (sectionId === 'branches') populateBranchTable();
+                if (sectionId === 'attendance') populateAttendanceTable();
+                if (sectionId === 'reports') initCharts();
+                showToast('Đã làm mới dữ liệu!');
+            }, 1000);
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            sidebar.classList.toggle('expanded');
+            content.classList.toggle('expanded');
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const options = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' };
+            const time = now.toLocaleTimeString('vi-VN', { hour12: false });
+            const date = now.toLocaleDateString('vi-VN', options);
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            document.getElementById('currentTime').textContent =
+            `Ngày: ${date}, ${time} (${timezone})`;
+        }
+
+        updateTime(); // Initial call
+        setInterval(updateTime, 1000); // Update every second
+        
+        // Initialize
+        showSection('dashboard');
+        populatePersonnelTable();
+        populateBranchTable();
+        populateAttendanceTable();
+    </script>
+</body>
+
+</html>
