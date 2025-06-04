@@ -1,4 +1,4 @@
-docker exec -it acb-branch-map-db-1 psql -U admin -d GIS
+docker exec -it acb-branch-map-3d-db-1 psql -U admin -d GIS
 
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS vector;

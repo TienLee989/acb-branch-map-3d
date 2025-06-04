@@ -1,0 +1,76 @@
+/* Tổng thể lịch */
+.react-calendar {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fff;
+  padding: 1rem;
+}
+
+/* Navigation (tháng) */
+.react-calendar__navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.react-calendar__navigation button {
+  background: none;
+  border: none;
+  color: #333;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.react-calendar__navigation button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Lưới ngày */
+.react-calendar__month-view__weekdays {
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.react-calendar__tile {
+  background: none;
+  border: none;
+  text-align: center;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  transition: background 0.3s;
+}
+
+.react-calendar__tile:enabled:hover {
+  background-color: #e0f2fe;
+}
+
+.react-calendar__tile--now {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  font-weight: bold;
+}
+
+.react-calendar__tile--active {
+  background-color: #3b82f6;
+  color: white;
+  font-weight: bold;
+}
+
+/* Dot marker sự kiện (nếu dùng tileContent sau này) */
+.event-dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  margin: 2px auto 0;
+  border-radius: 50%;
+  background-color: #f87171;
+}

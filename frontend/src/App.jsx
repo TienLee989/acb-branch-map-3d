@@ -1,24 +1,83 @@
-import React from 'react';
-import BranchMap from './components/BranchMap';
-import BranchList from './components/BranchList';
-import { BranchProvider } from './hooks/useBranchData';
-import './styles/App.css';
+import React, { useState, useEffect } from 'react';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import Dashboard from './components/Dashboard';
+import Personnel from './components/Personnel';
+import Branches from './components/Branches';
+import Attendance from './components/Attendance';
+import Reports from './components/Reports';
+import Reminders from './components/Reminders';
+import Footer from './components/Footer';
+import './styles/index.css'; // chứa CSS fix layout
+import { Style } from 'maplibre-gl';
 
-function App() {
+const App = () => {
+  const [activeSection, setActiveSection] = useState('dashboard');
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+
+  useEffect(() => {
+    window.showToast = (message) => {
+      const toastEl = document.getElementById('actionToast');
+      const messageEl = document.getElementById('toastMessage');
+      if (toastEl && messageEl) {
+        messageEl.innerText = message;
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    window.showSpinner = (id) => {
+      const el = document.getElementById(`${id}Spinner`);
+      if (el) el.classList.add('active');
+    };
+    window.hideSpinner = (id) => {
+      const el = document.getElementById(`${id}Spinner`);
+      if (el) el.classList.remove('active');
+    };
+  }, []);
+
+  const handleSectionChange = (sectionId) => {
+    setActiveSection(sectionId);
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarExpanded(!isSidebarExpanded);
+  };
+
   return (
-    <BranchProvider>
-      <div className="app">
-        <h1 className="title">
-          🏦 Hệ thống ACB Branch tại Việt Name
-          <small className="version">v1.0.1</small>
-        </h1>
-        <div className="content">
-          <BranchList />
-          <BranchMap />
+    <div className="app-container">
+      <Header />
+      <div className="app-body">
+        <Sidebar
+          activeSection={activeSection}
+          onNavigate={handleSectionChange}
+          toggleSidebar={toggleSidebar}
+          isSidebarExpanded={isSidebarExpanded}
+        />
+        <main
+          className={`main-content ${isSidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'}`}
+          style={{ marginTop: '6em' }}
+        >
+          {activeSection === 'dashboard' && <Dashboard active />}
+          {activeSection === 'personnel' && <Personnel active />}
+          {activeSection === 'branches' && <Branches active />}
+          {activeSection === 'attendance' && <Attendance active />}
+          {activeSection === 'reports' && <Reports active />}
+          {activeSection === 'reminders' && <Reminders active />}
+        </main>
+      </div>
+      <Footer />
+
+      {/* Toast */}
+      <div className="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="actionToast" className="toast bg-success text-white" role="alert" aria-live="assertive" aria-atomic="true">
+          <div className="toast-body" id="toastMessage"></div>
         </div>
       </div>
-    </BranchProvider>
+    </div>
   );
-}
+};
 
 export default App;
