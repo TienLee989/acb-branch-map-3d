@@ -1,20 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const Personnel = ({ active }) => {
-  const [personnelData, setPersonnelData] = useState([
-    { name: "Nguyễn Văn A", position: "Nhân viên", department: "Tín dụng", branch: "CN Hà Nội" },
-    { name: "Trần Thị B", position: "Quản lý", department: "Kế toán", branch: "CN TP.HCM" },
-    { name: "Lê Văn C", position: "Nhân viên", department: "Hành chính", branch: "CN Hà Nội" },
-    { name: "Phạm Văn D", position: "Trưởng phòng", department: "Tín dụng", branch: "CN Đà Nẵng" },
-    { name: "Ngô Thị E", position: "Nhân viên", department: "Hành chính", branch: "CN Cần Thơ" },
-    { name: "Lê Văn F", position: "Nhân viên", department: "Hành chính", branch: "CN Hà Nội" },
-    { name: "Phạm Văn G", position: "Trưởng phòng", department: "Tín dụng", branch: "CN Đà Nẵng" },
-    { name: "Ngô Thị H", position: "Nhân viên", department: "Hành chính", branch: "CN Cần Thơ" },
-    { name: "Lê Văn I", position: "Nhân viên", department: "Hành chính", branch: "CN Hà Nội" },
-    { name: "Phạm Văn K", position: "Trưởng phòng", department: "Tín dụng", branch: "CN Đà Nẵng" },
-    { name: "Ngô Thị L", position: "Nhân viên", department: "Hành chính", branch: "CN Cần Thơ" }
-  ]);
-
+  const [personnelData, setPersonnelData] = useState([]);
   const [search, setSearch] = useState('');
   const [branchFilter, setBranchFilter] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('');
@@ -23,24 +11,37 @@ const Personnel = ({ active }) => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(0);
 
-  const uniqueBranches = [...new Set(personnelData.map(p => p.branch))];
-  const uniqueDepartments = [...new Set(personnelData.map(p => p.department))];
-  const uniquePositions = [...new Set(personnelData.map(p => p.position))];
+  useEffect(() => {
+    if (active) fetchPersonnel();
+  }, [active]);
+
+  const fetchPersonnel = async () => {
+    try {
+      showSpinner('personnel');
+      const res = await axios.get('http://localhost:8003/api/employees/');
+      setPersonnelData(res.data);
+    } catch (err) {
+      console.error('Lỗi khi tải dữ liệu nhân sự:', err);
+    } finally {
+      hideSpinner('personnel');
+    }
+  };
+
+  const uniqueBranches = [...new Set(personnelData.map(p => p.branch_name))];
+  const uniqueDepartments = [...new Set(personnelData.map(p => p.department_name))];
+  const uniquePositions = [...new Set(personnelData.map(p => p.position_title))];
 
   const refreshData = () => {
-    showSpinner('personnel');
-    setTimeout(() => {
-      hideSpinner('personnel');
-      showToast('Đã làm mới dữ liệu!');
-    }, 1000);
+    fetchPersonnel();
+    showToast('Đã làm mới dữ liệu!');
   };
 
   const filteredPersonnel = personnelData.filter(person => {
     return (
-      person.name.toLowerCase().includes(search.toLowerCase()) &&
-      (!branchFilter || person.branch === branchFilter) &&
-      (!departmentFilter || person.department === departmentFilter) &&
-      (!positionFilter || person.position === positionFilter)
+      person.full_name.toLowerCase().includes(search.toLowerCase()) &&
+      (!branchFilter || person.branch_name === branchFilter) &&
+      (!departmentFilter || person.department_name === departmentFilter) &&
+      (!positionFilter || person.position_title === positionFilter)
     );
   });
 
@@ -50,42 +51,49 @@ const Personnel = ({ active }) => {
     currentPage * rowsPerPage + rowsPerPage
   );
 
-  const editPersonnel = (name) => {
-    const person = personnelData.find(p => p.name === name);
+  const editPersonnel = (id) => {
+    const person = personnelData.find(p => p.id === id);
     setModalData(person);
     setTimeout(() => {
-      document.getElementById('personName').value = person.name;
-      document.getElementById('personPosition').value = person.position;
-      document.getElementById('personDepartment').value = person.department;
-      document.getElementById('personBranch').value = person.branch;
+      document.getElementById('personName').value = person.full_name;
+      document.getElementById('personPosition').value = person.position_title;
+      document.getElementById('personDepartment').value = person.department_name;
+      document.getElementById('personBranch').value = person.branch_name;
       document.getElementById('addPersonnelModalLabel').innerText = 'Sửa Nhân viên';
       new bootstrap.Modal(document.getElementById('addPersonnelModal')).show();
     }, 0);
   };
 
-  const deletePersonnel = (name) => {
-    const updated = personnelData.filter(p => p.name !== name);
-    setPersonnelData(updated);
-    showToast('Đã xóa nhân viên thành công!');
+  const deletePersonnel = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8003/api/employees/${id}/`);
+      setPersonnelData(personnelData.filter(p => p.id !== id));
+      showToast('Đã xóa nhân viên thành công!');
+    } catch (err) {
+      console.error('Lỗi khi xóa nhân viên:', err);
+    }
   };
 
-  window.savePersonnel = () => {
-    const name = document.getElementById('personName').value;
-    const position = document.getElementById('personPosition').value;
-    const department = document.getElementById('personDepartment').value;
-    const branch = document.getElementById('personBranch').value;
+  window.savePersonnel = async () => {
+    const full_name = document.getElementById('personName').value;
+    const position_title = document.getElementById('personPosition').value;
+    const department_name = document.getElementById('personDepartment').value;
+    const branch_name = document.getElementById('personBranch').value;
 
-    const exists = personnelData.find(p => p.name === name);
-    let updated;
-    if (exists) {
-      updated = personnelData.map(p => (p.name === name ? { name, position, department, branch } : p));
-    } else {
-      updated = [...personnelData, { name, position, department, branch }];
+    const payload = { full_name, position_title, department_name, branch_name };
+
+    try {
+      if (modalData?.id) {
+        await axios.put(`http://localhost:8003/api/employees/${modalData.id}/`, payload);
+      } else {
+        await axios.post('http://localhost:8003/api/employees/', payload);
+      }
+      fetchPersonnel();
+      new bootstrap.Modal(document.getElementById('addPersonnelModal')).hide();
+      showToast('Đã lưu nhân viên thành công!');
+    } catch (err) {
+      console.error('Lỗi khi lưu nhân viên:', err);
     }
-
-    setPersonnelData(updated);
-    new bootstrap.Modal(document.getElementById('addPersonnelModal')).hide();
-    showToast('Đã lưu nhân viên thành công!');
   };
 
   useEffect(() => {
@@ -136,7 +144,6 @@ const Personnel = ({ active }) => {
           </div>
         </div>
 
-        {/* Pagination size selector */}
         <div className="flex justify-between p-2">
           <span className="font-medium">Hiển thị:</span>
           <select
@@ -150,7 +157,6 @@ const Personnel = ({ active }) => {
           </select>
         </div>
 
-        {/* Scrollable Table */}
         <div className="overflow-y-auto" style={{ maxHeight: '400px' }}>
           <table className="w-full bg-white rounded-lg">
             <thead className="sticky top-0 bg-gray-200 z-10">
@@ -164,16 +170,16 @@ const Personnel = ({ active }) => {
             </thead>
             <tbody>
               {paginatedPersonnel.map(person => (
-                <tr key={person.name}>
-                  <td className="p-2">{person.name}</td>
-                  <td className="p-2">{person.position}</td>
-                  <td className="p-2">{person.department}</td>
-                  <td className="p-2">{person.branch}</td>
+                <tr key={person.id}>
+                  <td className="p-2">{person.full_name}</td>
+                  <td className="p-2">{person.position_title}</td>
+                  <td className="p-2">{person.department_name}</td>
+                  <td className="p-2">{person.branch_name}</td>
                   <td className="p-2">
-                    <button className="custom-btn-edit me-2" onClick={() => editPersonnel(person.name)}>
+                    <button className="custom-btn-edit me-2" onClick={() => editPersonnel(person.id)}>
                       <i className="fas fa-edit"></i> Sửa
                     </button>
-                    <button className="custom-btn-del text-danger" onClick={() => deletePersonnel(person.name)}>
+                    <button className="custom-btn-del text-danger" onClick={() => deletePersonnel(person.id)}>
                       <i className="fas fa-trash"></i> Xóa
                     </button>
                   </td>
@@ -183,7 +189,6 @@ const Personnel = ({ active }) => {
           </table>
         </div>
 
-        {/* Pagination Buttons */}
         <div className="flex justify-center mt-2 mb-2">
           {Array.from({ length: totalPages }, (_, i) => (
             <button

@@ -67,6 +67,161 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="trainingModal" tabindex="-1" aria-labelledby="trainingModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="trainingModalLabel">Chi tiết Đào tạo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="mb-3">
+                <label class="form-label">Tiêu đề</label>
+                <input type="text" class="form-control" id="trainingTitle">
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Mô tả</label>
+                <textarea class="form-control" id="trainingDesc"></textarea>
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Thời gian</label>
+                <input type="text" class="form-control" id="trainingDateRange">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="saveTraining()">Lưu</button>
+            </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="deptModal" tabindex="-1" aria-labelledby="deptModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="deptModalLabel">Thông tin Phòng ban</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <div class="modal-body">
+                <form>
+                <div class="mb-3">
+                    <label class="form-label text-gray-700">Tên</label>
+                    <input type="text" class="form-control" id="deptName" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-gray-700">Mô tả</label>
+                    <textarea class="form-control" id="deptDesc"></textarea>
+                </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="custom-btn" onclick="saveDepartment()">Lưu</button>
+            </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="leaveModal" tabindex="-1" aria-labelledby="leaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="leaveModalLabel">Chi tiết Đơn nghỉ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="mb-3">
+                <label class="form-label">Nhân viên</label>
+                <input type="text" class="form-control" id="leaveEmployee" />
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Loại nghỉ</label>
+                <input type="text" class="form-control" id="leaveType" />
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Từ ngày</label>
+                <input type="date" class="form-control" id="leaveFrom" />
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Đến ngày</label>
+                <input type="date" class="form-control" id="leaveTo" />
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Lý do</label>
+                <textarea class="form-control" id="leaveReason"></textarea>
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-control" id="leaveStatus">
+                    <option value="Pending">Chờ duyệt</option>
+                    <option value="Approved">Đã duyệt</option>
+                    <option value="Rejected">Từ chối</option>
+                </select>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="saveLeave()">Lưu</button>
+            </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="addContractModal" tabindex="-1" aria-labelledby="addContractModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="addContractModalLabel">Chi tiết Hợp đồng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="mb-3">
+                <label class="form-label">Nhân viên</label>
+                <input type="text" class="form-control" id="contractEmployee" />
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Loại</label>
+                <select class="form-control" id="contractType">
+                    <option value="Fulltime">Toàn thời gian</option>
+                    <option value="Parttime">Bán thời gian</option>
+                    <option value="Contract">Hợp đồng</option>
+                </select>
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Từ ngày</label>
+                <input type="date" class="form-control" id="contractStart" />
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Đến ngày</label>
+                <input type="date" class="form-control" id="contractEnd" />
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Lương cơ bản</label>
+                <input type="number" class="form-control" id="contractSalary" />
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="saveContract()">Lưu</button>
+            </div>
+
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>

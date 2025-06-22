@@ -62,3 +62,7 @@ redis-cli -n 1 FLUSHDB
 python manage.py createsuperuser
 
 docker-compose exec backend python manage.py import_branchs
+
+--reload model
+python manage.py makemigrations
+python manage.py migrate

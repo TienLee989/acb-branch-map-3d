@@ -511,20 +511,21 @@ function BranchMap({ branchs, loading, selectedBranch }) {
       scene.add(light);
 
       const loader = new GLTFLoader();
-      const modelBranches = branchs
-        .map(branch => {
-          if (!branch.geom?.includes('POLYGON')) return null;
-          const coords = getPolygonCentroid(parseWKTPolygon(branch.geom));
-          return coords ? { ...branch, coords } : null;
-        })
-        .filter(Boolean);
+
+      const buildingsWithCoords = branchs.flatMap(branch =>
+        (branch.buildings || []).map(building => {
+          if (!building.footprint?.includes('POLYGON')) return null;
+          const coords = getPolygonCentroid(parseWKTPolygon(building.footprint));
+          return coords ? { ...building, coords } : null;
+        }).filter(Boolean)
+      );
 
       loader.load(
         '/models/building.glb',
         gltf => {
-          modelBranches.forEach(branch => {
+          buildingsWithCoords.forEach(building => {
             const merc = MercatorCoordinate.fromLngLat(
-              { lng: branch.coords[0], lat: branch.coords[1] },
+              { lng: building.coords[0], lat: building.coords[1] },
               0
             );
             const scale = merc.meterInMercatorCoordinateUnits();
@@ -537,7 +538,7 @@ function BranchMap({ branchs, loading, selectedBranch }) {
 
             model.traverse(child => {
               if (child.isMesh) {
-                child.userData = branch;
+                child.userData = building;
                 child.frustumCulled = false;
               }
             });
@@ -572,10 +573,14 @@ function BranchMap({ branchs, loading, selectedBranch }) {
   }, [loading, branchs]);
 
   useEffect(() => {
-    if (!mapRef.current || !selectedBranch || !selectedBranch.geom) return;
+    if (!mapRef.current || !selectedBranch) return;
 
-    const polygon = parseWKTPolygon(selectedBranch.geom);
+    const firstBuilding = selectedBranch.buildings?.find(b => b.footprint?.includes('POLYGON'));
+    if (!firstBuilding) return;
+
+    const polygon = parseWKTPolygon(firstBuilding.footprint);
     const coords = getPolygonCentroid(polygon);
+
     if (coords) {
       mapRef.current.flyTo({ center: coords, zoom: 17 });
     }
@@ -585,7 +590,7 @@ function BranchMap({ branchs, loading, selectedBranch }) {
     <div
       className="branch-map w-full"
       ref={containerRef}
-      style={{ height: '50em' }}
+      style={{ height: '37em' }}
     />
   );
 }

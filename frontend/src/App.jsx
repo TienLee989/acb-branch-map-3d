@@ -8,8 +8,15 @@ import Attendance from './components/Attendance';
 import Reports from './components/Reports';
 import Reminders from './components/Reminders';
 import Footer from './components/Footer';
+import Departments from './components/Departments'
+import Leaves from './components/Leaves'
 import './styles/index.css'; // chứa CSS fix layout
 import { Style } from 'maplibre-gl';
+import Evaluations from './components/Evaluations';
+import Events from './components/Events';
+import Trainings from './components/Trainings';
+import Payroll from './components/Payroll';
+import Contracts from './components/Contracts';
 
 const App = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -61,8 +68,18 @@ const App = () => {
           style={{ marginTop: '6em' }}
         >
           {activeSection === 'dashboard' && <Dashboard active />}
-          {activeSection === 'personnel' && <Personnel active />}
           {activeSection === 'branches' && <Branches active />}
+          {activeSection === 'departments' && <Departments active />}
+
+          {activeSection === 'personnel' && <Personnel active />}
+          {activeSection === 'evaluations' && <Evaluations active />}
+          {activeSection === 'events' && <Events active />}
+          {activeSection === 'trainings' && <Trainings active />}
+          {activeSection === 'leaves' && <Leaves active />}
+
+          {activeSection === 'payroll' && <Payroll active />}
+          {activeSection === 'contracts' && <Contracts active />}
+
           {activeSection === 'attendance' && <Attendance active />}
           {activeSection === 'reports' && <Reports active />}
           {activeSection === 'reminders' && <Reminders active />}

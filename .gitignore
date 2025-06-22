@@ -2,4 +2,4 @@ osm-data/*.osm.pbf
 frontend/node_modules
 frontend/build
 
-backend/apps/branchs/__pycache__/*
+backend/apps/branchs/__pycache__/* 
