@@ -23,7 +23,25 @@ from django.utils import timezone
 
 #     def __str__(self):
 #         return f"Branch {self.id} - {self.name or 'Unnamed'}"
+class Company(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.TextField(blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+    start_time = models.TimeField(blank=True, null=True)  # Giờ bắt đầu làm việc
+    end_time = models.TimeField(blank=True, null=True)    # Giờ kết thúc làm việc
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        db_table = 'company'
+        verbose_name = 'Công ty'
+        verbose_name_plural = 'Các công ty'
+
+    def __str__(self):
+        return self.name
+    
 class Branch(models.Model):
     id = models.AutoField(primary_key=True)  # INT PRIMARY KEY (tự tăng)
     name = models.CharField(max_length=255)
@@ -133,12 +151,19 @@ class Contract(models.Model):
         FULLTIME = 'Fulltime'
         PARTTIME = 'Parttime'
         CONTRACT = 'Contract'
+    class Status(models.TextChoices):
+        ACTIVE = 'Active'
+        INACTIVE = 'Inactive'
+        ONLEAVE = 'OnLeave'
+        RESIGNED = 'Resigned'
 
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     type = models.CharField(max_length=20, choices=Type.choices)
-    start_date = models.DateField()
-    end_date = models.DateField()
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
     base_salary = models.DecimalField(max_digits=12, decimal_places=2)
+    status = models.CharField(max_length=20, choices=Status.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'contracts'
@@ -148,9 +173,11 @@ class Contract(models.Model):
 class Payroll(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     year_month = models.CharField(max_length=7)
-    salary_total = models.DecimalField(max_digits=12, decimal_places=2)
+    salary = models.DecimalField(max_digits=12, decimal_places=2)
     bonus = models.DecimalField(max_digits=12, decimal_places=2)
     deductions = models.DecimalField(max_digits=12, decimal_places=2)
+    pay_date = models.DateField()
+    total_pay = models.DecimalField(max_digits=12, decimal_places=2)
 
     class Meta:
         db_table = 'payroll'
@@ -232,3 +259,54 @@ class Event(models.Model):
         db_table = 'events'
         verbose_name = 'Sự kiện'
         verbose_name_plural = 'Các sự kiện'
+
+class Attendance(models.Model):
+    class Status(models.TextChoices):
+        PRESENT = 'Present', 'Đúng giờ'
+        LATE = 'Late', 'Trễ'
+        ABSENT = 'Absent', 'Nghỉ không phép'
+
+    employee = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='attendances')
+    date = models.DateField()
+    status = models.CharField(max_length=10, choices=Status.choices)
+    time_in = models.TimeField(null=True, blank=True)
+    time_out = models.TimeField(null=True, blank=True)
+    hours_worked = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    note = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'attendance'
+        unique_together = ('employee', 'date')
+        verbose_name = 'Chấm công'
+        verbose_name_plural = 'Dữ liệu chấm công'
+
+    def save(self, *args, **kwargs):
+        # Lấy công ty đầu tiên từ bảng companies (giả sử chỉ có một công ty)
+        try:
+            company = Company.objects.first()
+            start_time = company.start_time if company else None
+        except Company.DoesNotExist:
+            start_time = None
+
+        # Tính trạng thái chấm công
+        if self.time_in and start_time:
+            if self.time_in > start_time:
+                self.status = self.Status.LATE
+            else:
+                self.status = self.Status.PRESENT
+        elif not self.time_in:
+            self.status = self.Status.ABSENT
+
+        # Tính số giờ làm việc
+        if self.time_in and self.time_out:
+            time_in = timezone.datetime.combine(self.date, self.time_in)
+            time_out = timezone.datetime.combine(self.date, self.time_out)
+            hours = (time_out - time_in).total_seconds() / 3600
+            self.hours_worked = round(hours, 2)
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.date} - {self.get_status_display()}"

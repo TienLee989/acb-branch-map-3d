@@ -91,12 +91,15 @@ CREATE INDEX idx_employees_vector ON employees USING ivfflat (location_vector ve
 
 -- Contracts
 CREATE TABLE contracts (
-  id SERIAL PRIMARY KEY,
-  employee_id INT REFERENCES employees(id) ON DELETE CASCADE,
-  type contract_type_enum,
-  start_date DATE,
-  end_date DATE,
-  base_salary DECIMAL
+    id SERIAL PRIMARY KEY,
+    employee_id INT NOT NULL,
+    type contract_type_enum,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    salary DECIMAL(10, 2) NOT NULL,
+    status employee_status_enum,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES employees(id)
 );
 
 -- Payroll
@@ -167,3 +170,22 @@ CREATE TABLE events (
 );
 
 CREATE INDEX idx_event_vector ON events USING ivfflat (summary_vector vector_cosine_ops) WITH (lists = 100);
+
+-- ENUM in English for attendance status
+CREATE TYPE attendance_status AS ENUM ('Present', 'Late', 'Absent');
+
+-- Attendance table
+CREATE TABLE attendance (
+    id SERIAL PRIMARY KEY,
+    employee_id INT NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    status attendance_status NOT NULL,
+    time_in TIME,
+    time_out TIME,
+    hours_worked DECIMAL(5,2) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Optional index for performance
+CREATE INDEX idx_attendance_employee_date ON attendance (employee_id, date);

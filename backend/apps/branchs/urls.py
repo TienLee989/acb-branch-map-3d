@@ -1,14 +1,15 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    BranchViewSet, DepartmentViewSet, PositionViewSet,
+    AttendanceViewSet, BranchViewSet, DepartmentViewSet, PositionViewSet,
     BuildingViewSet, RoomViewSet, EmployeeViewSet,
     ContractViewSet, PayrollViewSet, LeaveViewSet,
     TrainingViewSet, EmployeeTrainingViewSet,
-    EvaluationViewSet, EventViewSet
+    EvaluationViewSet, EventViewSet,CompanyViewSet
 )
 
 router = DefaultRouter()
+router.register(r'company', CompanyViewSet, basename='company')
 router.register(r'branchs', BranchViewSet, basename='branchs')
 router.register(r'departments', DepartmentViewSet, basename='departments')
 router.register(r'positions', PositionViewSet, basename='positions')
@@ -22,11 +23,12 @@ router.register(r'trainings', TrainingViewSet, basename='trainings')
 router.register(r'employee-trainings', EmployeeTrainingViewSet, basename='employee-trainings')
 router.register(r'evaluations', EvaluationViewSet, basename='evaluations')
 router.register(r'events', EventViewSet, basename='events')
+router.register(r'attendance', AttendanceViewSet, basename='attendance')
 
 print("=== ROUTER REGISTERED URLs ===")
 for url in router.urls:
     print(url.name, url.pattern)
     
 urlpatterns = [
-    path('', include(router.urls)),
+    path('', include(router.urls))
 ]

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -8,37 +9,56 @@ import Attendance from './components/Attendance';
 import Reports from './components/Reports';
 import Reminders from './components/Reminders';
 import Footer from './components/Footer';
-import Departments from './components/Departments'
-import Leaves from './components/Leaves'
-import './styles/index.css'; // chứa CSS fix layout
-import { Style } from 'maplibre-gl';
+import Departments from './components/Departments';
+import Leaves from './components/Leaves';
 import Evaluations from './components/Evaluations';
 import Events from './components/Events';
 import Trainings from './components/Trainings';
 import Payroll from './components/Payroll';
 import Contracts from './components/Contracts';
+import './styles/index.css';
 
-const App = () => {
-  const [activeSection, setActiveSection] = useState('dashboard');
+const SectionWrapper = ({ children, isSidebarExpanded }) => {
+  return (
+    <main
+      className={`main-content ${isSidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'}`}
+      style={{ marginTop: '6em' }}
+    >
+      {children}
+    </main>
+  );
+};
+
+const AppInner = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
+  const activeSection = location.pathname.replace('/', '') || 'dashboard';
+
   useEffect(() => {
-    window.showToast = (message) => {
+    window.showToast = (message, type = 'success') => {
       const toastEl = document.getElementById('actionToast');
       const messageEl = document.getElementById('toastMessage');
+
       if (toastEl && messageEl) {
         messageEl.innerText = message;
+
+        toastEl.classList.remove('bg-success', 'bg-danger', 'bg-warning');
+        toastEl.classList.add(
+          type === 'error' ? 'bg-danger' : type === 'warning' ? 'bg-warning' : 'bg-success'
+        );
+
         const toast = new bootstrap.Toast(toastEl);
         toast.show();
       }
     };
-  }, []);
 
-  useEffect(() => {
     window.showSpinner = (id) => {
       const el = document.getElementById(`${id}Spinner`);
       if (el) el.classList.add('active');
     };
+
     window.hideSpinner = (id) => {
       const el = document.getElementById(`${id}Spinner`);
       if (el) el.classList.remove('active');
@@ -46,7 +66,7 @@ const App = () => {
   }, []);
 
   const handleSectionChange = (sectionId) => {
-    setActiveSection(sectionId);
+    navigate(`/${sectionId}`);
   };
 
   const toggleSidebar = () => {
@@ -63,28 +83,25 @@ const App = () => {
           toggleSidebar={toggleSidebar}
           isSidebarExpanded={isSidebarExpanded}
         />
-        <main
-          className={`main-content ${isSidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'}`}
-          style={{ marginTop: '6em' }}
-        >
-          {activeSection === 'dashboard' && <Dashboard active />}
-          {activeSection === 'branches' && <Branches active />}
-          {activeSection === 'departments' && <Departments active />}
 
-          {activeSection === 'personnel' && <Personnel active />}
-          {activeSection === 'evaluations' && <Evaluations active />}
-          {activeSection === 'events' && <Events active />}
-          {activeSection === 'trainings' && <Trainings active />}
-          {activeSection === 'leaves' && <Leaves active />}
-
-          {activeSection === 'payroll' && <Payroll active />}
-          {activeSection === 'contracts' && <Contracts active />}
-
-          {activeSection === 'attendance' && <Attendance active />}
-          {activeSection === 'reports' && <Reports active />}
-          {activeSection === 'reminders' && <Reminders active />}
-        </main>
+        <Routes>
+          <Route path="/" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Dashboard active /></SectionWrapper>} />
+          <Route path="/dashboard" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Dashboard active /></SectionWrapper>} />
+          <Route path="/branches" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Branches active /></SectionWrapper>} />
+          <Route path="/departments" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Departments active /></SectionWrapper>} />
+          <Route path="/personnel" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Personnel active /></SectionWrapper>} />
+          <Route path="/attendance" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Attendance active /></SectionWrapper>} />
+          <Route path="/evaluations" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Evaluations active /></SectionWrapper>} />
+          <Route path="/events" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Events active /></SectionWrapper>} />
+          <Route path="/trainings" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Trainings active /></SectionWrapper>} />
+          <Route path="/leaves" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Leaves active /></SectionWrapper>} />
+          <Route path="/payroll" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Payroll active /></SectionWrapper>} />
+          <Route path="/contracts" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Contracts active /></SectionWrapper>} />
+          <Route path="/reports" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Reports active /></SectionWrapper>} />
+          <Route path="/reminders" element={<SectionWrapper isSidebarExpanded={isSidebarExpanded}><Reminders active /></SectionWrapper>} />
+        </Routes>
       </div>
+
       <Footer />
 
       {/* Toast */}
@@ -96,5 +113,11 @@ const App = () => {
     </div>
   );
 };
+
+const App = () => (
+  <Router>
+    <AppInner />
+  </Router>
+);
 
 export default App;

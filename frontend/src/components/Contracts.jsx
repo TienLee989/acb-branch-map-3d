@@ -126,40 +126,42 @@ const Contracts = ({ active }) => {
           </div>
         </div>
 
-        <table className="w-full bg-white rounded-lg">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="p-2 text-left">Nhân viên</th>
-              <th className="p-2 text-left">Loại</th>
-              <th className="p-2 text-left">Từ ngày</th>
-              <th className="p-2 text-left">Đến ngày</th>
-              <th className="p-2 text-left">Lương</th>
-              <th className="p-2 text-left">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredContracts.map(c => (
-              <tr key={c.id}>
-                <td className="p-2">{c.employee?.full_name || `ID ${c.employee}`}</td>
-                <td className="p-2">{c.type}</td>
-                <td className="p-2">{c.start_date}</td>
-                <td className="p-2">{c.end_date}</td>
-                <td className="p-2">{c.base_salary.toLocaleString()}</td>
-                <td className="p-2">
-                  <button className="custom-btn-view me-2" onClick={() => openModal('view', c.id)}>
-                    <i className="fas fa-eye"></i> Xem
-                  </button>
-                  <button className="custom-btn-edit me-2" onClick={() => openModal('edit', c.id)}>
-                    <i className="fas fa-edit"></i> Sửa
-                  </button>
-                  <button className="custom-btn-del text-danger" onClick={() => deleteContract(c.id)}>
-                    <i className="fas fa-trash"></i> Xóa
-                  </button>
-                </td>
+        <div className="overflow-y-auto" style={{ maxHeight: '400px' }}>
+          <table className="w-full bg-white rounded-lg">
+            <thead className="sticky top-0 bg-gray-200 z-10">
+              <tr>
+                <th className="p-2 text-left">Nhân viên</th>
+                <th className="p-2 text-left">Loại</th>
+                <th className="p-2 text-left">Từ ngày</th>
+                <th className="p-2 text-left">Đến ngày</th>
+                <th className="p-2 text-left">Lương</th>
+                <th className="p-2 text-left">Hành động</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredContracts.map(c => (
+                <tr key={c.id}>
+                  <td className="p-2">{c.employee?.full_name || `ID ${c.employee}`}</td>
+                  <td className="p-2">{c.type}</td>
+                  <td className="p-2">{c.start_date}</td>
+                  <td className="p-2">{c.end_date}</td>
+                  <td className="p-2">{c.base_salary.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                  <td className="p-2">
+                    <button className="custom-btn-view me-2" onClick={() => openModal('view', c.id)}>
+                      <i className="fas fa-eye"></i> Xem
+                    </button>
+                    <button className="custom-btn-edit me-2" onClick={() => openModal('edit', c.id)}>
+                      <i className="fas fa-edit"></i> Sửa
+                    </button>
+                    <button className="custom-btn-del text-danger" onClick={() => deleteContract(c.id)}>
+                      <i className="fas fa-trash"></i> Xóa
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

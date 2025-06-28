@@ -136,26 +136,22 @@ const BranchesContent = ({ active }) => {
         >
           <i className="fas fa-sync-alt mr-2"></i>Làm mới
         </button>
+        <select
+          value={rowsPerPage}
+          onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+          className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+        >
+          {[5, 10, 20, 50].map(num => (
+            <option key={num} value={num}>{num} dòng</option>
+          ))}
+        </select>
       </div>
 
-      <div className="bg-white rounded-xl shadow-xl relative">
+      <div className="card relative shadow">
         <div className="spinner-overlay hidden" id="branchesSpinner">
           <div className="spinner-border text-blue-600" role="status">
             <span className="visually-hidden">Đang tải...</span>
           </div>
-        </div>
-
-        <div className="flex justify-between p-6">
-          <span className="font-semibold text-gray-700">Hiển thị:</span>
-          <select
-            value={rowsPerPage}
-            onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
-            className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-          >
-            {[5, 10, 20, 50].map(num => (
-              <option key={num} value={num}>{num} dòng</option>
-            ))}
-          </select>
         </div>
 
         <div className="overflow-y-auto" style={{ maxHeight: '500px' }}>
@@ -189,7 +185,7 @@ const BranchesContent = ({ active }) => {
                         data-bs-toggle="modal"
                         data-bs-target="#buildingDetailModal"
                       >
-                        <i className="fas fa-info-circle mr-2"></i>Chi tiết
+                        <i className="fas fa-info-circle mr-2"></i>
                       </button>
                     ))}
                   </td>
@@ -199,16 +195,28 @@ const BranchesContent = ({ active }) => {
           </table>
         </div>
 
-        <div className="flex justify-center mt-6 mb-6">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              className={`mx-1 px-4 py-2 rounded-lg ${i === currentPage ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 hover:bg-gray-300'} transition duration-200`}
-              onClick={() => setCurrentPage(i)}
-            >
-              {i + 1}
-            </button>
-          ))}
+        {paginatedBranches.length === 0 && (
+          <div className="text-center p-4 text-gray-500">Không có dữ liệu</div>
+        )}
+
+        <div className="flex justify-center items-center mt-4 gap-2">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+            disabled={currentPage === 0}
+            className="btn btn-outline-primary"
+          >
+            ← Trước
+          </button>
+          <span className="px-3 py-2 text-sm text-gray-700 bg-gray-50 rounded">
+            Trang {currentPage + 1} / {totalPages || 1}
+          </span>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+            disabled={currentPage >= totalPages - 1}
+            className="btn btn-outline-primary"
+          >
+            Tiếp →
+          </button>
         </div>
       </div>
 

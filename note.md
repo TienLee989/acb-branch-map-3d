@@ -66,3 +66,19 @@ docker-compose exec backend python manage.py import_branchs
 --reload model
 python manage.py makemigrations
 python manage.py migrate
+
+
+
+
+# Step 1: Install required packages
+apt update && apt install -y git build-essential postgresql-server-dev-all
+
+# Step 2: Clone the pgvector repo
+git clone https://github.com/pgvector/pgvector.git
+
+# Step 3: Enter the pgvector directory
+cd pgvector
+
+# Step 4: Build and install the extension
+make
+make install

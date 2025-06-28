@@ -7,6 +7,8 @@ const Trainings = ({ active }) => {
   const [search, setSearch] = useState('');
   const [modalData, setModalData] = useState(null);
   const [modalMode, setModalMode] = useState('');
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const loadTrainings = async () => {
     try {
@@ -24,8 +26,18 @@ const Trainings = ({ active }) => {
     if (active) loadTrainings();
   }, [active]);
 
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [search, rowsPerPage]);
+
   const filteredTrainings = trainings.filter(t =>
     t.title.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredTrainings.length / rowsPerPage);
+  const paginatedTrainings = filteredTrainings.slice(
+    currentPage * rowsPerPage,
+    currentPage * rowsPerPage + rowsPerPage
   );
 
   const openModal = (mode, id = null) => {
@@ -98,6 +110,15 @@ const Trainings = ({ active }) => {
         <button className="custom-btn" onClick={loadTrainings}>
           <i className="fas fa-sync-alt mr-2"></i>Làm mới
         </button>
+        <select
+          value={rowsPerPage}
+          onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+          className="p-2 border rounded-lg"
+        >
+          {[5, 10, 20, 50].map(n => (
+            <option key={n} value={n}>{n} dòng</option>
+          ))}
+        </select>
       </div>
 
       <div className="card relative shadow">
@@ -106,37 +127,59 @@ const Trainings = ({ active }) => {
             <span className="visually-hidden">Đang tải...</span>
           </div>
         </div>
-
-        <table className="w-full bg-white rounded-lg">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="p-2 text-left">Tiêu đề</th>
-              <th className="p-2 text-left">Mô tả</th>
-              <th className="p-2 text-left">Thời gian</th>
-              <th className="p-2 text-left">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTrainings.map(t => (
-              <tr key={t.id}>
-                <td className="p-2">{t.title}</td>
-                <td className="p-2">{t.description}</td>
-                <td className="p-2">{t.date_range}</td>
-                <td className="p-2">
-                  <button className="custom-btn-view me-2" onClick={() => openModal('view', t.id)}>
-                    <i className="fas fa-eye"></i> Xem
-                  </button>
-                  <button className="custom-btn-edit me-2" onClick={() => openModal('edit', t.id)}>
-                    <i className="fas fa-edit"></i> Sửa
-                  </button>
-                  <button className="custom-btn-del text-danger" onClick={() => deleteTraining(t.id)}>
-                    <i className="fas fa-trash"></i> Xóa
-                  </button>
-                </td>
+        <div className="overflow-y-auto" style={{ maxHeight: '400px' }}>
+          <table className="w-full bg-white rounded-lg">
+            <thead className="sticky top-0 bg-gray-200 z-10">
+              <tr>
+                <th className="p-2 text-left">Tiêu đề</th>
+                <th className="p-2 text-left">Mô tả</th>
+                <th className="p-2 text-left">Thời gian</th>
+                <th className="p-2 text-left">Hành động</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {paginatedTrainings.map(t => (
+                <tr key={t.id}>
+                  <td className="p-2">{t.title}</td>
+                  <td className="p-2">{t.description}</td>
+                  <td className="p-2">{t.date_range}</td>
+                  <td className="p-2">
+                    <button className="custom-btn-view me-2" onClick={() => openModal('view', t.id)}>
+                      <i className="fas fa-eye"></i> Xem
+                    </button>
+                    <button className="custom-btn-edit me-2" onClick={() => openModal('edit', t.id)}>
+                      <i className="fas fa-edit"></i> Sửa
+                    </button>
+                    <button className="custom-btn-del text-danger" onClick={() => deleteTraining(t.id)}>
+                      <i className="fas fa-trash"></i> Xóa
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {filteredTrainings.length === 0 && (
+          <div className="text-center p-4 text-gray-500">Không có dữ liệu</div>
+        )}
+
+        <div className="flex justify-center items-center mt-4 gap-2">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+            disabled={currentPage === 0}
+            className="btn btn-outline-primary"
+          >
+            ← Trước
+          </button>
+          <span>Trang {currentPage + 1} / {totalPages || 1}</span>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+            disabled={currentPage >= totalPages - 1}
+            className="btn btn-outline-primary"
+          >
+            Tiếp →
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -45,6 +45,28 @@ export const fetchEvaluations = async () => {
         throw new Error('Không thể tải dữ liệu evaluations: ' + error.message);
     }
 };
+export const fetchEmployees = async () => {
+    try {
+        const API_URL = 'http://localhost:8003/api/employees/';
+        console.log("---------start----------");
+        const response = await axios.get(API_URL);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi chi tiết:', error.response?.data || error.message);
+        throw new Error('Không thể tải dữ liệu employees: ' + error.message);
+    }
+};
+export const fetchEmployeeTrainings = async () => {
+    try {
+        const API_URL = 'http://localhost:8003/api/employee-trainings/';
+        console.log("---------start----------");
+        const response = await axios.get(API_URL);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi chi tiết:', error.response?.data || error.message);
+        throw new Error('Không thể tải dữ liệu employee-trainings: ' + error.message);
+    }
+};
 export const fetchEvents = async () => {
     try {
         const API_URL = 'http://localhost:8003/api/events/';
@@ -98,5 +120,16 @@ export const fetchTrainings = async () => {
     } catch (error) {
         console.error('Lỗi chi tiết:', error.response?.data || error.message);
         throw new Error('Không thể tải dữ liệu trainings: ' + error.message);
+    }
+};
+export const fetchAttendances = async () => {
+    try {
+        const API_URL = 'http://localhost:8003/api/attendance/';
+        console.log("---------start----------");
+        const response = await axios.get(API_URL);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi chi tiết:', error.response?.data || error.message);
+        throw new Error('Không thể tải dữ liệu attendance: ' + error.message);
     }
 };

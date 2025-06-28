@@ -50,7 +50,28 @@ const Personnel = ({ active }) => {
     currentPage * rowsPerPage,
     currentPage * rowsPerPage + rowsPerPage
   );
+  const viewPersonnel = (id) => {
+    const person = personnelData.find(p => p.id === id);
+    if (!person) return;
 
+    setModalData(person);
+    setTimeout(() => {
+      document.getElementById('detailFullName').textContent = person.full_name || 'N/A';
+      document.getElementById('detailGender').textContent = person.gender || 'N/A';
+      document.getElementById('detailDob').textContent = person.dob || 'N/A';
+      document.getElementById('detailPhone').textContent = person.phone || 'N/A';
+      document.getElementById('detailEmail').textContent = person.email || 'N/A';
+      document.getElementById('detailPosition').textContent = person.position_title || 'N/A';
+      document.getElementById('detailDepartment').textContent = person.department_name || 'N/A';
+      document.getElementById('detailBranch').textContent = person.branch_name || 'N/A';
+      document.getElementById('detailFloor').textContent = person.floor_number || 'N/A';
+      document.getElementById('detailRoomCode').textContent = person.room_code || 'N/A';
+      document.getElementById('detailHireDate').textContent = person.hire_date || 'N/A';
+      document.getElementById('detailStatus').textContent = person.status || 'N/A';
+      document.getElementById('detailAvatar').src = person.avatar_url || '/avatars/default.jpg';
+      new bootstrap.Modal(document.getElementById('personnelDetailModal')).show();
+    }, 0);
+  };
   const editPersonnel = (id) => {
     const person = personnelData.find(p => p.id === id);
     setModalData(person);
@@ -135,18 +156,7 @@ const Personnel = ({ active }) => {
         >
           <i className="fas fa-plus mr-2"></i>Thêm Nhân viên
         </button>
-      </div>
-
-      <div className="card relative shadow p-0">
-        <div className="spinner-overlay" id="personnelSpinner">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Đang tải...</span>
-          </div>
-        </div>
-
-        <div className="flex justify-between p-2">
-          <span className="font-medium">Hiển thị:</span>
-          <select
+        <select
             value={rowsPerPage}
             onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
             className="border rounded p-1"
@@ -155,6 +165,13 @@ const Personnel = ({ active }) => {
               <option key={num} value={num}>{num} dòng</option>
             ))}
           </select>
+      </div>
+
+      <div className="card relative shadow">
+        <div className="spinner-overlay" id="personnelSpinner">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Đang tải...</span>
+          </div>
         </div>
 
         <div className="overflow-y-auto" style={{ maxHeight: '400px' }}>
@@ -176,6 +193,9 @@ const Personnel = ({ active }) => {
                   <td className="p-2">{person.department_name}</td>
                   <td className="p-2">{person.branch_name}</td>
                   <td className="p-2">
+                    <button className="custom-btn-view me-2" onClick={() => viewPersonnel(person.id)}>
+                      <i className="fas fa-eye"></i> Xem
+                    </button>
                     <button className="custom-btn-edit me-2" onClick={() => editPersonnel(person.id)}>
                       <i className="fas fa-edit"></i> Sửa
                     </button>
@@ -189,16 +209,22 @@ const Personnel = ({ active }) => {
           </table>
         </div>
 
-        <div className="flex justify-center mt-2 mb-2">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              className={`mx-1 px-3 py-1 rounded ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              onClick={() => setCurrentPage(i)}
-            >
-              {i + 1}
-            </button>
-          ))}
+        <div className="flex justify-center items-center mt-4 gap-2">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
+            disabled={currentPage === 0}
+            className="btn btn-outline-primary"
+          >
+            ← Trước
+          </button>
+          <span>Trang {currentPage + 1} / {totalPages || 1}</span>
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))}
+            disabled={currentPage >= totalPages - 1}
+            className="btn btn-outline-primary"
+          >
+            Tiếp →
+          </button>
         </div>
       </div>
     </div>

@@ -12,16 +12,13 @@ const Sidebar = ({ onNavigate, toggleSidebar, activeSection, isSidebarExpanded }
         { key: 'branches', label: ' Chi nhánh', icon: 'fas fa-code-branch' },
         { key: 'departments', label: ' Phòng ban', icon: 'fas fa-building' },
         { key: 'personnel', label: ' Nhân sự', icon: 'fas fa-users' },
-
+        { key: 'attendance', label: ' Chấm công', icon: 'fas fa-clock' },
         { key: 'evaluations', label: ' Đánh giá', icon: 'fas fa-star' },
         { key: 'events', label: ' Sự kiện', icon: 'fas fa-calendar-check' },
         { key: 'trainings', label: ' Training', icon: 'fas fa-chalkboard-teacher' },
         { key: 'leaves', label: ' Nghỉ phép', icon: 'fas fa-plane-departure' },
-
         { key: 'payroll', label: ' Lương', icon: 'fas fa-wallet' },
         { key: 'contracts', label: ' Hợp đồng', icon: 'fas fa-file-contract' },
-
-        { key: 'attendance', label: ' Chấm công', icon: 'fas fa-clock' },
         { key: 'reports', label: ' Báo cáo', icon: 'fas fa-chart-line' }
       ].map(({ key, label, icon }) => (
           <button

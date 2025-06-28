@@ -1,9 +1,14 @@
 from rest_framework import serializers
 from .models import (
-    Department, Position, Building, Room, Employee,
+    Attendance, Department, Position, Building, Room, Employee,
     Contract, Payroll, Leave, Training, EmployeeTraining,
-    Evaluation, Event, Branch
+    Evaluation, Event, Branch,Company
 )
+
+class CompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = ['id', 'name', 'address', 'phone', 'email', 'website', 'start_time', 'end_time', 'created_at', 'updated_at']
 
 class BranchSerializer(serializers.ModelSerializer):
     departments = serializers.SerializerMethodField()
@@ -107,9 +112,12 @@ class EmployeeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class EmployeeShortSerializer(serializers.ModelSerializer):
+    department = serializers.CharField(source='department.name', read_only=True)
+
     class Meta:
         model = Employee
-        fields = ['id', 'full_name']
+        fields = ['id', 'full_name', 'department']
+
 class ContractSerializer(serializers.ModelSerializer):
     employee = EmployeeShortSerializer(read_only=True)
     class Meta:
@@ -152,3 +160,36 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = '__all__'
+
+class AttendanceSerializer(serializers.ModelSerializer):
+    employee_name = serializers.CharField(source='employee.full_name', read_only=True, allow_null=True)
+    branch_name = serializers.CharField(source='employee.room.building.branch.name', read_only=True, allow_null=True)
+    employee = EmployeeShortSerializer(read_only=True)
+    status_display = serializers.SerializerMethodField()
+    company_start_time = serializers.SerializerMethodField()
+    company_end_time = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Attendance
+        fields = [
+            'id', 'employee', 'employee_name', 'branch_name',
+            'date', 'status', 'status_display', 'time_in', 'time_out',
+            'company_start_time', 'company_end_time', 'hours_worked', 'note',
+            'created_at', 'updated_at'
+        ]
+
+    def get_status_display(self, obj):
+        status_map = {
+            'Present': 'Đúng giờ',
+            'Late': 'Trễ',
+            'Absent': 'Nghỉ không phép'
+        }
+        return status_map.get(obj.status, obj.status)
+
+    def get_company_start_time(self, obj):
+        company = Company.objects.first()
+        return company.start_time if company else None
+
+    def get_company_end_time(self, obj):
+        company = Company.objects.first()
+        return company.end_time if company else None

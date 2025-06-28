@@ -2,6 +2,10 @@ from rest_framework import viewsets
 from django.contrib.gis.geos import GEOSGeometry
 from .models import *
 from .serializers import *
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.db.models import Count
+from datetime import datetime
 
 # class BranchViewSet(viewsets.ModelViewSet):
 #     vietnam_polygon = GEOSGeometry(
@@ -10,6 +14,13 @@ from .serializers import *
 #     )
 #     queryset = Branch.objects.filter(geom__within=vietnam_polygon)
 #     serializer_class = BranchSerializer
+class CompanyViewSet(viewsets.ModelViewSet):
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
 class BranchViewSet(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
@@ -111,3 +122,18 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+class AttendanceViewSet(viewsets.ModelViewSet):
+    queryset = Attendance.objects.select_related(
+        'employee',
+        'employee__room',
+        'employee__room__building',
+        'employee__room__building__branch',
+        'employee__department'
+    )
+    serializer_class = AttendanceSerializer
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+# --------------------------------------------------

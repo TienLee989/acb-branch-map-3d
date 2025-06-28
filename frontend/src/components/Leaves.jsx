@@ -7,6 +7,8 @@ const Leaves = ({ active }) => {
   const [search, setSearch] = useState('');
   const [modalData, setModalData] = useState(null);
   const [modalMode, setModalMode] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const loadLeaves = async () => {
     try {
@@ -24,21 +26,28 @@ const Leaves = ({ active }) => {
     if (active) loadLeaves();
   }, [active]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, rowsPerPage]);
+
   const filteredLeaves = leaves.filter(l =>
     l.employee?.full_name?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredLeaves.length / rowsPerPage);
+  const paginatedLeaves = filteredLeaves.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
   );
 
   const openModal = (mode, id = null) => {
     setModalMode(mode);
     let leave = { employee: '', type: '', from: '', to: '', reason: '', status: 'Pending' };
-
     if (id !== null) {
       const found = leaves.find(l => l.id === id);
       if (found) leave = found;
     }
-
     setModalData(leave);
-
     setTimeout(() => {
       document.getElementById('leaveEmployee').value = leave.employee;
       document.getElementById('leaveType').value = leave.type;
@@ -48,10 +57,8 @@ const Leaves = ({ active }) => {
       document.getElementById('leaveStatus').value = leave.status;
       document.getElementById('leaveModalLabel').innerText =
         mode === 'view' ? 'Xem Đơn nghỉ' : mode === 'edit' ? 'Sửa Đơn nghỉ' : 'Thêm Đơn nghỉ';
-
       const inputs = document.querySelectorAll('#leaveModal input, #leaveModal textarea, #leaveModal select');
       inputs.forEach(input => input.disabled = mode === 'view');
-
       new bootstrap.Modal(document.getElementById('leaveModal')).show();
     }, 0);
   };
@@ -98,7 +105,7 @@ const Leaves = ({ active }) => {
     <div id="leaves" className={`section ${active ? '' : 'hidden'}`}>
       <h2 className="text-2xl font-bold mb-4">Quản lý Đơn nghỉ</h2>
 
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4 items-center">
         <input
           type="text"
           placeholder="Tìm theo tên nhân viên..."
@@ -112,6 +119,15 @@ const Leaves = ({ active }) => {
         <button className="custom-btn" onClick={loadLeaves}>
           <i className="fas fa-sync-alt mr-2"></i>Làm mới
         </button>
+        <select
+          value={rowsPerPage}
+          onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+          className="border border-gray-300 rounded-lg p-2"
+        >
+          {[5, 10, 20, 50].map(num => (
+            <option key={num} value={num}>{num} dòng</option>
+          ))}
+        </select>
       </div>
 
       <div className="card relative shadow">
@@ -120,43 +136,66 @@ const Leaves = ({ active }) => {
             <span className="visually-hidden">Đang tải...</span>
           </div>
         </div>
-
-        <table className="w-full bg-white rounded-lg">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="p-2 text-left">Nhân viên</th>
-              <th className="p-2 text-left">Loại</th>
-              <th className="p-2 text-left">Từ</th>
-              <th className="p-2 text-left">Đến</th>
-              <th className="p-2 text-left">Lý do</th>
-              <th className="p-2 text-left">Trạng thái</th>
-              <th className="p-2 text-left">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredLeaves.map(l => (
-              <tr key={l.id}>
-                <td className="p-2">{l.employee?.full_name}</td>
-                <td className="p-2">{l.type}</td>
-                <td className="p-2">{l.from_date}</td>
-                <td className="p-2">{l.to_date}</td>
-                <td className="p-2">{l.reason}</td>
-                <td className="p-2">{l.status}</td>
-                <td className="p-2">
-                  <button className="custom-btn-view me-2" onClick={() => openModal('view', l.id)}>
-                    <i className="fas fa-eye"></i> Xem
-                  </button>
-                  <button className="custom-btn-edit me-2" onClick={() => openModal('edit', l.id)}>
-                    <i className="fas fa-edit"></i> Sửa
-                  </button>
-                  <button className="custom-btn-del text-danger" onClick={() => deleteLeave(l.id)}>
-                    <i className="fas fa-trash"></i> Xóa
-                  </button>
-                </td>
+        
+        <div className="overflow-y-auto" style={{ maxHeight: '400px' }}>
+          <table className="w-full bg-white rounded-lg">
+            <thead className="sticky top-0 bg-gray-200 z-10">
+              <tr>
+                <th className="p-2 text-left">Nhân viên</th>
+                <th className="p-2 text-left">Loại</th>
+                <th className="p-2 text-left">Từ</th>
+                <th className="p-2 text-left">Đến</th>
+                <th className="p-2 text-left">Lý do</th>
+                <th className="p-2 text-left">Trạng thái</th>
+                <th className="p-2 text-left">Hành động</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {paginatedLeaves.map(l => (
+                <tr key={l.id}>
+                  <td className="p-2">{l.employee?.full_name}</td>
+                  <td className="p-2">{l.type}</td>
+                  <td className="p-2">{l.from_date}</td>
+                  <td className="p-2">{l.to_date}</td>
+                  <td className="p-2">{l.reason}</td>
+                  <td className="p-2">{l.status}</td>
+                  <td className="p-2">
+                    <button className="custom-btn-view me-2" onClick={() => openModal('view', l.id)}>
+                      <i className="fas fa-eye"></i> Xem
+                    </button>
+                    <button className="custom-btn-edit me-2" onClick={() => openModal('edit', l.id)}>
+                      <i className="fas fa-edit"></i> Sửa
+                    </button>
+                    <button className="custom-btn-del text-danger" onClick={() => deleteLeave(l.id)}>
+                      <i className="fas fa-trash"></i> Xóa
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {paginatedLeaves.length === 0 && (
+          <div className="text-center p-4 text-gray-500">Không có dữ liệu</div>
+        )}
+
+        <div className="flex justify-center items-center mt-4 gap-2">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="btn btn-outline-primary"
+          >
+            ← Trước
+          </button>
+          <span>Trang {currentPage} / {totalPages || 1}</span>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="btn btn-outline-primary"
+          >
+            Tiếp →
+          </button>
+        </div>
       </div>
     </div>
   );

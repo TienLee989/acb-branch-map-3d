@@ -295,3 +295,35 @@ table tbody tr:first-child td:last-child {
 .main-content.sidebar-collapsed {
   margin-left: 60px;
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 0.5; }
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(90deg, #007bff, #0056b3);
+}
+
+#detailStatus {
+  padding: 0.25rem 0.5rem;
+}
+
+#detailAvatar {
+  object-fit: cover;
+}
+
+.modal-content {
+  border: none;
+  border-radius: 0.5rem;
+}
